@@ -1,0 +1,2 @@
+# FPSTemplate
+Dedicated server course
