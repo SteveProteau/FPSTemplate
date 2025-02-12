@@ -23,9 +23,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+
 private:
 	// Process Parameters needs to remain in scope for the lifetime of the app
 	FProcessParameters ProcessParameters;
 
+	void SetServerParameters(FServerParameters& OutServerParameters);
 	void InitGameLift();
 };
