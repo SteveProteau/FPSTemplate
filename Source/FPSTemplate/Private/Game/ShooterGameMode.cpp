@@ -102,9 +102,9 @@ void AShooterGameMode::InitGameLift()
     // Here is where a game server takes action based on the game session object.
     // When the game server is ready to receive incoming player connections, 
     // it invokes the server SDK call ActivateGameSession().
-    auto OnStartGameSession = [=](Aws::GameLift::Server::Model::GameSession GameSession)
+    auto OnStartGameSession = [=](Aws::GameLift::Server::Model::GameSession InGameSession)
     {
-        FString GameSessionId = FString(GameSession.GetGameSessionId());
+        FString GameSessionId = FString(InGameSession.GetGameSessionId());
         UE_LOG(LogShooterGameMode, Log, TEXT("GameSession Initializing: %s"), *GameSessionId);
 		GameLiftSdkModule->ActivateGameSession();
     };
@@ -140,15 +140,22 @@ void AShooterGameMode::InitGameLift()
 
     ProcessParameters.OnHealthCheck.BindLambda(OnHealthCheck);
 
+	// DIVERGED FROM COURSE (lesson 26)!
+	//
 	// The game server gets ready to report that it is ready to host game sessions
-	// and that it will listen on port 7777 for incoming player connections.
-	ProcessParameters.port = 7777;
-
+	// and that it will listen on the port for incoming player connections. The port
+	// is optionally passed in as a command line parameter, or we use the default
+	// port (typically 7777)
+	if (!FParse::Value(FCommandLine::Get(), TEXT("-port="), ProcessParameters.port))
+	{
+		ProcessParameters.port = FURL::UrlConfig.DefaultPort;
+	}
+	
 	// Here, the game server tells GameLift where to find game session log files.
 	// At the end of a game session, GameLift uploads everything in the specified 
 	// location and stores it in the cloud for access later.
 	TArray<FString> Logfiles;
-	Logfiles.Add(TEXT("GameLift426Test/Saved/Logs/GameLift426Test.log"));
+	Logfiles.Add(TEXT("FPSTemplate/Saved/Logs/FPSTemplate.log"));
 	ProcessParameters.logParameters = Logfiles;
 
 	// The game server calls ProcessReady() to tell GameLift it's ready to host game sessions.
