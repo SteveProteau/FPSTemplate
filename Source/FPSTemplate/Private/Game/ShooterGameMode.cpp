@@ -37,7 +37,7 @@ void AShooterGameMode::SetServerParameters(FServerParameters& OutServerParameter
 	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("-secretkey="), OutServerParameters.m_secretKey))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("SECRET_KEY: % s"), *OutServerParameters.m_secretKey)
+		UE_LOG(LogShooterGameMode, Log, TEXT("SECRET_KEY: %s"), *OutServerParameters.m_secretKey)
 	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("-sessiontoken="), OutServerParameters.m_sessionToken))
 	{
@@ -150,6 +150,7 @@ void AShooterGameMode::InitGameLift()
 	{
 		ProcessParameters.port = FURL::UrlConfig.DefaultPort;
 	}
+	UE_LOG(LogShooterGameMode, Log, TEXT("PORT: %d"), ProcessParameters.port)
 	
 	// Here, the game server tells GameLift where to find game session log files.
 	// At the end of a game session, GameLift uploads everything in the specified 
