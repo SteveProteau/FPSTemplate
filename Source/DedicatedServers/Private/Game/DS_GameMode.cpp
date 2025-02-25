@@ -1,15 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/ShooterGameMode.h"
+#include "DedicatedServers/Public/Game/DS_GameMode.h"
 
-DEFINE_LOG_CATEGORY(LogShooterGameMode);
+DEFINE_LOG_CATEGORY(LogDS_GameMode);
 
-AShooterGameMode::AShooterGameMode()
-{
-}
-
-void AShooterGameMode::BeginPlay()
+void ADS_GameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -18,48 +14,48 @@ void AShooterGameMode::BeginPlay()
 #endif
 }
 
-void AShooterGameMode::SetServerParameters(FServerParameters& OutServerParameters)
+void ADS_GameMode::SetServerParameters(FServerParameters& OutServerParameters)
 {
-	// AuthToken returned from the "aws gamelift get-compute-auth-token" API. Note this will expire and require a new call to the API after 15 minutes.
+		// AuthToken returned from the "aws gamelift get-compute-auth-token" API. Note this will expire and require a new call to the API after 15 minutes.
 	if (FParse::Value(FCommandLine::Get(), TEXT("-authtoken="), OutServerParameters.m_authToken))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("AUTH_TOKEN: %s"), *OutServerParameters.m_authToken)
+		UE_LOG(LogDS_GameMode, Log, TEXT("AUTH_TOKEN: %s"), *OutServerParameters.m_authToken)
 	}
 
 	if (FParse::Value(FCommandLine::Get(), TEXT("-awsregion="), OutServerParameters.m_awsRegion))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("AWS_REGION: %s"), *OutServerParameters.m_awsRegion)
+		UE_LOG(LogDS_GameMode, Log, TEXT("AWS_REGION: %s"), *OutServerParameters.m_awsRegion)
 	}
 
 	if (FParse::Value(FCommandLine::Get(), TEXT("-accesskey="), OutServerParameters.m_accessKey))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("ACCESS_KEY: %s"), *OutServerParameters.m_accessKey)
+		UE_LOG(LogDS_GameMode, Log, TEXT("ACCESS_KEY: %s"), *OutServerParameters.m_accessKey)
 	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("-secretkey="), OutServerParameters.m_secretKey))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("SECRET_KEY: %s"), *OutServerParameters.m_secretKey)
+		UE_LOG(LogDS_GameMode, Log, TEXT("SECRET_KEY: %s"), *OutServerParameters.m_secretKey)
 	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("-sessiontoken="), OutServerParameters.m_sessionToken))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("SESSION_TOKEN: %s"), *OutServerParameters.m_sessionToken)
+		UE_LOG(LogDS_GameMode, Log, TEXT("SESSION_TOKEN: %s"), *OutServerParameters.m_sessionToken)
 	}
 
 	// The Host/compute-name of the GameLift Anywhere instance.
 	if (FParse::Value(FCommandLine::Get(), TEXT("-hostid="), OutServerParameters.m_hostId))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("HOST_ID: %s"), *OutServerParameters.m_hostId)
+		UE_LOG(LogDS_GameMode, Log, TEXT("HOST_ID: %s"), *OutServerParameters.m_hostId)
 	}
 
 	// The Anywhere Fleet ID.
 	if (FParse::Value(FCommandLine::Get(), TEXT("-fleetid="), OutServerParameters.m_fleetId))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("FLEET_ID: %s"), *OutServerParameters.m_fleetId)
+		UE_LOG(LogDS_GameMode, Log, TEXT("FLEET_ID: %s"), *OutServerParameters.m_fleetId)
 	}
 
 	// The WebSocket URL (GameLiftServiceSdkEndpoint).
 	if (FParse::Value(FCommandLine::Get(), TEXT("-websocketurl="), OutServerParameters.m_webSocketUrl))
 	{
-		UE_LOG(LogShooterGameMode, Log, TEXT("WEBSOCKET_URL: %s"), *OutServerParameters.m_webSocketUrl)
+		UE_LOG(LogDS_GameMode, Log, TEXT("WEBSOCKET_URL: %s"), *OutServerParameters.m_webSocketUrl)
 	}
 
 	// The PID of the running process
@@ -76,12 +72,12 @@ void AShooterGameMode::SetServerParameters(FServerParameters& OutServerParameter
 		OutServerParameters.m_processId = TCHAR_TO_UTF8(*ProcessId);
 	}
 
-	UE_LOG(LogShooterGameMode, Log, TEXT("PID: %s"), *OutServerParameters.m_processId);
+	UE_LOG(LogDS_GameMode, Log, TEXT("PID: %s"), *OutServerParameters.m_processId);
 }
 
-void AShooterGameMode::InitGameLift()
+void ADS_GameMode::InitGameLift()
 {
-	UE_LOG(LogShooterGameMode, Log, TEXT("Initializing the GameLift Server"));
+		UE_LOG(LogDS_GameMode, Log, TEXT("Initializing the GameLift Server"));
 
 	FGameLiftServerSDKModule* GameLiftSdkModule = &FModuleManager::LoadModuleChecked<FGameLiftServerSDKModule>(FName("GameLiftServerSDK"));
 
@@ -105,7 +101,7 @@ void AShooterGameMode::InitGameLift()
     auto OnStartGameSession = [=](Aws::GameLift::Server::Model::GameSession InGameSession)
     {
         FString GameSessionId = FString(InGameSession.GetGameSessionId());
-        UE_LOG(LogShooterGameMode, Log, TEXT("GameSession Initializing: %s"), *GameSessionId);
+        UE_LOG(LogDS_GameMode, Log, TEXT("GameSession Initializing: %s"), *GameSessionId);
 		GameLiftSdkModule->ActivateGameSession();
     };
 
@@ -119,7 +115,7 @@ void AShooterGameMode::InitGameLift()
     // server SDK call ProcessEnding() to tell GameLift it is shutting down.
     auto OnProcessTerminate = [=]()
     {
-        UE_LOG(LogShooterGameMode, Log, TEXT("Game Server Process is terminating"));
+        UE_LOG(LogDS_GameMode, Log, TEXT("Game Server Process is terminating"));
         GameLiftSdkModule->ProcessEnding();
     };
 
@@ -134,7 +130,7 @@ void AShooterGameMode::InitGameLift()
     // In this example, the game server always reports healthy.
     auto OnHealthCheck = []()
     {
-        UE_LOG(LogShooterGameMode, Log, TEXT("Performing Health Check"));
+        UE_LOG(LogDS_GameMode, Log, TEXT("Performing Health Check"));
         return true;
     };
 
@@ -150,7 +146,7 @@ void AShooterGameMode::InitGameLift()
 	{
 		ProcessParameters.port = FURL::UrlConfig.DefaultPort;
 	}
-	UE_LOG(LogShooterGameMode, Log, TEXT("PORT: %d"), ProcessParameters.port)
+	UE_LOG(LogDS_GameMode, Log, TEXT("PORT: %d"), ProcessParameters.port)
 	
 	// Here, the game server tells GameLift where to find game session log files.
 	// At the end of a game session, GameLift uploads everything in the specified 
@@ -160,6 +156,6 @@ void AShooterGameMode::InitGameLift()
 	ProcessParameters.logParameters = Logfiles;
 
 	// The game server calls ProcessReady() to tell GameLift it's ready to host game sessions.
-	UE_LOG(LogShooterGameMode, Log, TEXT("Calling Process Ready"));
+	UE_LOG(LogDS_GameMode, Log, TEXT("Calling Process Ready"));
 	GameLiftSdkModule->ProcessReady(ProcessParameters);
 }
