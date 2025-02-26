@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "HTTPRequestManager.generated.h"
 
+class UAPIData;
+
 /**
  * 
  */
@@ -13,4 +15,8 @@ UCLASS(Blueprintable)
 class DEDICATEDSERVERS_API UHTTPRequestManager : public UObject
 {
 	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAPIData> APIData;
 };
