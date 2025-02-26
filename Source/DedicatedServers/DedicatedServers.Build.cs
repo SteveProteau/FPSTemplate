@@ -19,7 +19,7 @@ public class DedicatedServers : ModuleRules
 		{
 			"Slate", 
 			"SlateCore",
-			"umg"
+			"UMG"
 		});
 	}
 }
