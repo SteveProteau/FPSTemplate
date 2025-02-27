@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "APITestOverlay.generated.h"
 
+class UFleetId;
 class UAPITestManager;
 class UListFleetsBox;
 
@@ -20,6 +21,9 @@ class DEDICATEDSERVERS_API UAPITestOverlay : public UUserWidget
 public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAPITestManager> APITestManagerClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UFleetId> FleetIdWidgetClass;
 
 protected:
 	virtual void NativeConstruct() override;
