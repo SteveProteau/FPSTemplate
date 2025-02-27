@@ -30,6 +30,12 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAPITestManager> APITestManager;
+
+	UFUNCTION()
+	void ListFleetsButtonClicked();
+
+	UFUNCTION()
+	void OnListFleetsResponseReceived(const FDSListFleetsResponse& ListFleetsResponse, bool bWasSuccessful);
 };
 
 

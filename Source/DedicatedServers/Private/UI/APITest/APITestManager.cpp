@@ -6,12 +6,11 @@
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "Data/API/APIData.h"
-#include "DedicatedServers/DedicatedServers.h"
 #include "GameplayTags/DedicatedServersTags.h"
 #include "Interfaces/IHttpResponse.h"
 #include "UI/HTTP/HTTPRequestTypes.h"
 
-void UAPITestManager::ListFleetsButtonClicked()
+void UAPITestManager::ListFleets()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "List Fleets button clicked");
 
@@ -28,8 +27,6 @@ void UAPITestManager::ListFleetsButtonClicked()
 	Request->SetVerb(TEXT("GET"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 	Request->ProcessRequest();
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "List Fleets Request Made");
 }
 
 void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -42,38 +39,18 @@ void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponse
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
-		if (JsonObject->HasField(TEXT("errorType")) || JsonObject->HasField(TEXT("errorMessage")))
+		if (ContainsErrors(JsonObject))
 		{
-			const FString ErrorType = JsonObject->HasField(TEXT("errorType")) ? JsonObject->GetStringField(TEXT("errorType")) : TEXT("Unknown Error");
-			const FString ErrorMessage = JsonObject->HasField(TEXT("errorMessage")) ? JsonObject->GetStringField(TEXT("errorMessage")) : TEXT("Unknown Error Message");
-
-			UE_LOG(LogDedicatedServers, Error, TEXT("Error Type: %s"), *ErrorType);
-			UE_LOG(LogDedicatedServers, Error, TEXT("Error Message: %s"), *ErrorMessage);
-
+			OnListFleetsResponseReceived.Broadcast(FDSListFleetsResponse(), false);
 			return;
 		}
-		
-		if (JsonObject->HasField(TEXT("$fault")))
-		{
-			const FString ErrorType = JsonObject->HasField(TEXT("name")) ? JsonObject->GetStringField(TEXT("name")) : TEXT("Unknown Error");
-			UE_LOG(LogDedicatedServers, Error, TEXT("Error Type: %s"), *ErrorType);
-			return;
-		}
-		
-		// Special handing for field starting with $ (not valid character for struct field)
-		if (JsonObject->HasField(TEXT("$metadata")))
-		{
-			const TSharedPtr<FJsonObject> MetaDataJsonObject = JsonObject->GetObjectField(TEXT("$metadata"));
 
-			// Populate our metadata struct with the json data
-			FDSMetaData DSMetaData;
-			FJsonObjectConverter::JsonObjectToUStruct(MetaDataJsonObject.ToSharedRef(), &DSMetaData);
-
-			DSMetaData.Dump();
-		}
+		DumpMetadata(JsonObject);
 
 		FDSListFleetsResponse ListFleetsResponse;
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &ListFleetsResponse);
 		ListFleetsResponse.Dump();
+
+		OnListFleetsResponseReceived.Broadcast(ListFleetsResponse, true);
 	}
 }
