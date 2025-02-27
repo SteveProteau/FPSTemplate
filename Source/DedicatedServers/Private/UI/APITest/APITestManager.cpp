@@ -6,6 +6,7 @@
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "Data/API/APIData.h"
+#include "DedicatedServers/DedicatedServers.h"
 #include "GameplayTags/DedicatedServersTags.h"
 #include "Interfaces/IHttpResponse.h"
 #include "UI/HTTP/HTTPRequestTypes.h"
@@ -41,6 +42,24 @@ void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponse
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
+		if (JsonObject->HasField(TEXT("errorType")) || JsonObject->HasField(TEXT("errorMessage")))
+		{
+			const FString ErrorType = JsonObject->HasField(TEXT("errorType")) ? JsonObject->GetStringField(TEXT("errorType")) : TEXT("Unknown Error");
+			const FString ErrorMessage = JsonObject->HasField(TEXT("errorMessage")) ? JsonObject->GetStringField(TEXT("errorMessage")) : TEXT("Unknown Error Message");
+
+			UE_LOG(LogDedicatedServers, Error, TEXT("Error Type: %s"), *ErrorType);
+			UE_LOG(LogDedicatedServers, Error, TEXT("Error Message: %s"), *ErrorMessage);
+
+			return;
+		}
+		
+		if (JsonObject->HasField(TEXT("$fault")))
+		{
+			const FString ErrorType = JsonObject->HasField(TEXT("name")) ? JsonObject->GetStringField(TEXT("name")) : TEXT("Unknown Error");
+			UE_LOG(LogDedicatedServers, Error, TEXT("Error Type: %s"), *ErrorType);
+			return;
+		}
+		
 		// Special handing for field starting with $ (not valid character for struct field)
 		if (JsonObject->HasField(TEXT("$metadata")))
 		{
