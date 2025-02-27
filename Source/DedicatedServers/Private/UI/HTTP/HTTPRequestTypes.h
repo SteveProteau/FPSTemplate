@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "HTTPRequestTypes.generated.h"
 
@@ -18,6 +18,20 @@ struct FDSMetaData
 
 	UPROPERTY()
 	double totalRetryDelay{};
+
+	void Dump() const;
+};
+
+USTRUCT()
+struct FDSListFleetsResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FString> FleetIds{};
+
+	UPROPERTY()
+	FString NextToken;
 
 	void Dump() const;
 };

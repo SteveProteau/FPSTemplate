@@ -41,14 +41,7 @@ void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponse
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
-		// if (JsonObject->HasField(TEXT("FleetIds")))
-		// {
-		// 	for (const TSharedPtr<FJsonValue> Fleet : JsonObject->GetArrayField(TEXT("FleetIds")))
-		// 	{
-		// 		FString FleetString = Fleet->AsString();
-		// 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FleetString);
-		// 	}
-		// }
+		// Special handing for field starting with $ (not valid character for struct field)
 		if (JsonObject->HasField(TEXT("$metadata")))
 		{
 			const TSharedPtr<FJsonObject> MetaDataJsonObject = JsonObject->GetObjectField(TEXT("$metadata"));
@@ -59,5 +52,9 @@ void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponse
 
 			DSMetaData.Dump();
 		}
+
+		FDSListFleetsResponse ListFleetsResponse;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &ListFleetsResponse);
+		ListFleetsResponse.Dump();
 	}
 }
