@@ -12,8 +12,6 @@
 
 void UAPITestManager::ListFleets()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "List Fleets button clicked");
-
 	// Get HTTP URL for ListFleets
 	check(APIData);
 	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::GameSessionsAPI::ListFleets);
@@ -31,8 +29,6 @@ void UAPITestManager::ListFleets()
 
 void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "List Fleets Request Received");
-
 	// Deserialize JSON response into an Unreal Engine JSON object (not a UObject so we use a shared pointer).
 	// The reader uses a shared reference because it cannot be null and is intialized immediately.
 	TSharedPtr<FJsonObject> JsonObject;
