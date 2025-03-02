@@ -21,5 +21,5 @@ protected:
 	TObjectPtr<UAPIData> APIData;
 
 	bool ContainsErrors(TSharedPtr<FJsonObject> JsonObject);
-	void DumpMetadata(TSharedPtr<FJsonObject> JsonObject);
+	void DumpMetaData(TSharedPtr<FJsonObject> JsonObject);
 };

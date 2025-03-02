@@ -41,7 +41,7 @@ void UAPITestManager::ListFleets_Response(FHttpRequestPtr Request, FHttpResponse
 			return;
 		}
 
-		DumpMetadata(JsonObject);
+		DumpMetaData(JsonObject);
 
 		FDSListFleetsResponse ListFleetsResponse;
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &ListFleetsResponse);

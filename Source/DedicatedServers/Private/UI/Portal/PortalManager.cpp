@@ -4,12 +4,15 @@
 #include "UI/Portal/PortalManager.h"
 
 #include "HttpModule.h"
+#include "JsonObjectConverter.h"
 #include "Data/API/APIData.h"
 #include "GameplayTags/DedicatedServersTags.h"
+#include "Interfaces/IHttpResponse.h"
+#include "UI/HTTP/HTTPRequestTypes.h"
 
 void UPortalManager::JoinGameSession()
 {
-	BroadcastJoinGameSessionMessage.Broadcast(TEXT("Searching for a Game Session..."));
+	BroadcastJoinGameSessionMessage.Broadcast(TEXT("Searching for a Game Session..."), false);
 	
 	check(APIData);
 	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::GameSessionsAPI::FindOrCreateGameSession);
@@ -29,4 +32,28 @@ void UPortalManager::FindOrCreateGameSession_Response(FHttpRequestPtr Request, F
 	bool bWasSuccessful)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Find or Create Game Session Response Received");
+
+	// Note that the Response can still have valid information if something went wrong
+	if (!bWasSuccessful)
+	{
+		// Reset the join button to enable retries
+		BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+		}
+		DumpMetaData(JsonObject);
+
+		FDSGameSession GameSession;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &GameSession);
+		GameSession.Dump();
+
+		BroadcastJoinGameSessionMessage.Broadcast(TEXT("Found Game Session."), false);
+	}
 }

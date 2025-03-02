@@ -30,7 +30,7 @@ bool UHTTPRequestManager::ContainsErrors(TSharedPtr<FJsonObject> JsonObject)
 	return false;
 }
 
-void UHTTPRequestManager::DumpMetadata(TSharedPtr<FJsonObject> JsonObject)
+void UHTTPRequestManager::DumpMetaData(TSharedPtr<FJsonObject> JsonObject)
 {
 	// Special handing for field starting with $ (not valid character for struct field)
 	if (JsonObject->HasField(TEXT("$metadata")))

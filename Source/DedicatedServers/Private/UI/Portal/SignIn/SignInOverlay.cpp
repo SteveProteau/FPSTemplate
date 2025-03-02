@@ -32,11 +32,15 @@ void USignInOverlay::OnJoinGameButtonClicked()
 	JoinGameWidget->Button_JoinGame->SetIsEnabled(false);
 }
 
-void USignInOverlay::UpdateJoinGameStatusMessage(const FString& StatusMessage)
+void USignInOverlay::UpdateJoinGameStatusMessage(const FString& StatusMessage, bool bShouldResetJoinGameButton)
 {
 	check(IsValid(JoinGameWidget));
 	check(IsValid(JoinGameWidget->Button_JoinGame));
 	
 	JoinGameWidget->SetStatusMessage(StatusMessage);
-	JoinGameWidget->Button_JoinGame->SetIsEnabled(true);
+
+	if (bShouldResetJoinGameButton)
+	{
+		JoinGameWidget->Button_JoinGame->SetIsEnabled(true);
+	}
 }
