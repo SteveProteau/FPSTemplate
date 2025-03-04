@@ -85,7 +85,7 @@ void UPortalManager::HandleGameSessionStatus(const FString& Status, const FStrin
 	{
 		// BroadcastJoinGameSessionMessage.Broadcast(TEXT("Game Session Status: ACTIVATING..."), false);
 		FTimerDelegate CreateSessionDelegate;
-		CreateSessionDelegate.BindUObject(this, JoinGameSession);
+		CreateSessionDelegate.BindUObject(this, &UPortalManager::JoinGameSession);
 
 		// Start re-try timer
 		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
@@ -102,4 +102,31 @@ void UPortalManager::HandleGameSessionStatus(const FString& Status, const FStrin
 
 void UPortalManager::TryCreatePlayerSession(const FString& PlayerId, const FString& GameSessionId)
 {
+	check(APIData);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::GameSessionsAPI::CreatePlayerSession);
+	
+	// Use shared ref because not a UE managed object
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+
+	// Bind to response and send HTTP request
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::CreatePlayerSession_Response);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	TMap<FString, FString> Params =
+	{
+		{TEXT("playerId"), PlayerId}, 
+		{TEXT("gameSessionId"), GameSessionId}
+	};
+	const FString Content = SerializeJsonContent(Params);
+	
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
+}
+
+void UPortalManager::CreatePlayerSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	
 }
