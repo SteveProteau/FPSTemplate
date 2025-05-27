@@ -38,4 +38,11 @@ public:
 
 	UFUNCTION()
 	void UpdateStatusMessage(const FString& Message, bool bShouldResetWidgets);
+
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+	UFUNCTION()
+	void UpdateConfirmButtonState(const FText& Text);
 };

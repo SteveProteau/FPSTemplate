@@ -2,10 +2,18 @@
 
 
 #include "UI/Portal/SignIn/ConfirmSignUpPage.h"
-
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
+
+
+void UConfirmSignUpPage::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	TextBox_ConfirmationCode->OnTextChanged.AddDynamic(this, &UConfirmSignUpPage::UpdateConfirmButtonState);
+	Button_Confirm->SetIsEnabled(false);
+}
 
 void UConfirmSignUpPage::ClearTextBoxes()
 {
@@ -22,4 +30,29 @@ void UConfirmSignUpPage::UpdateStatusMessage(const FString& Message, bool bShoul
 		Button_Confirm->SetIsEnabled(true);
 	}
 	
+}
+
+void UConfirmSignUpPage::UpdateConfirmButtonState(const FText& Text)
+{
+	// Enforce 6 digits:
+	//
+	//  R - Raw string
+	//  \d - match any digit
+	//  {6} - 6 digits
+	//  $ - termination of raw string
+	//
+	const FRegexPattern SixDigitsPattern(TEXT(R"(^\d{6}$)"));
+	FRegexMatcher Matcher(SixDigitsPattern, Text.ToString());
+
+	const bool bValidConfirmationCode = Matcher.FindNext();
+
+	Button_Confirm->SetIsEnabled(bValidConfirmationCode);
+	if (bValidConfirmationCode)
+	{
+		TextBlock_StatusMessage->SetText(FText::GetEmpty());
+	}
+	else
+	{
+		TextBlock_StatusMessage->SetText(FText::FromString("Please enter six numerical digits."));
+	}
 }
