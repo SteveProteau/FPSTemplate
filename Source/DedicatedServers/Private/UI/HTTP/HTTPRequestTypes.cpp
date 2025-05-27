@@ -78,7 +78,7 @@ void FDSPlayerSession::Dump() const
 	UE_LOG(LogDedicatedServers, Log, TEXT("  TerminationTime: %s"), *TerminationTime);
 }
 
-void FCodeDeliveryDetails::Dump() const
+void FDSCodeDeliveryDetails::Dump() const
 {
 	UE_LOG(LogDedicatedServers, Log, TEXT("CodeDeliveryDetails:"));
 	UE_LOG(LogDedicatedServers, Log, TEXT("   AttributeName: %s"), *AttributeName);

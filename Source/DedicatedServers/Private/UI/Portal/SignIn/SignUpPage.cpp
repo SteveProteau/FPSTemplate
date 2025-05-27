@@ -16,6 +16,14 @@ void USignUpPage::UpdateStatusMessage(const FString& Message, bool bShouldResetW
 	}
 }
 
+void USignUpPage::ClearTextBoxes()
+{
+	TextBox_UserName->SetText(FText::GetEmpty());
+	TextBox_Password->SetText(FText::GetEmpty());
+	TextBox_ConfirmPassword->SetText(FText::GetEmpty());
+	TextBox_Email->SetText(FText::GetEmpty());
+}
+
 void USignUpPage::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -25,6 +33,12 @@ void USignUpPage::NativeConstruct()
 	TextBox_ConfirmPassword->OnTextChanged.AddDynamic(this, &USignUpPage::UpdateSignUpButtonState);
 	TextBox_Email->OnTextChanged.AddDynamic(this, &USignUpPage::UpdateSignUpButtonState);
 	Button_SignUp->SetIsEnabled(false);
+
+	// TODO: TEMP!!!!!
+	TextBox_UserName->SetText(FText::FromString(TEXT("TestUser")));
+	TextBox_Password->SetText(FText::FromString(TEXT("StevePr0!")));
+	TextBox_ConfirmPassword->SetText(FText::FromString(TEXT("StevePr0!")));
+	TextBox_Email->SetText(FText::FromString(TEXT("steveproteau@hotmail.com")));
 }
 
 void USignUpPage::UpdateSignUpButtonState(const FText& Text)

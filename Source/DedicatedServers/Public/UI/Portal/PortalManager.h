@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Interfaces/IHttpRequest.h"
 #include "UI/HTTP/HTTPRequestManager.h"
+#include "UI/HTTP/HTTPRequestTypes.h"
 #include "PortalManager.generated.h"
-
 
 /**
  * 
@@ -20,6 +20,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FAPIStatusMessage SignUpStatusMessageDelegate;
 
+	UPROPERTY(BlueprintAssignable)
+	FAPIStatusMessage ConfirmStatusMessageDelegate;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnAPIRequestSucceeded  OnSignupSucceeded;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAPIRequestSucceeded  OnConfirmSucceeded;
+	
 	void SignUp(const FString& Username, const FString& Password, const FString& Email);
 	void Confirm(const FString& ConfirmationCode);
 	void SignIn(const FString& Username, const FString& Password);
@@ -27,6 +36,10 @@ public:
 	UFUNCTION()
 	void QuitGame();
 
+	FDSSignUpResponse LastSignUpResponse;
+	FString LastUsername;
+
 private:
 	void SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };

@@ -10,7 +10,6 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/GameSessions/GameSessionsManager.h"
-#include "UI/HTTP/HTTPRequestTypes.h"
 
 void UPortalManager::SignUp(const FString& Username, const FString& Password, const FString& Email)
 {
@@ -28,6 +27,8 @@ void UPortalManager::SignUp(const FString& Username, const FString& Password, co
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
+	LastUsername = Username;
+	
 	TMap<FString, FString> Params =
 	{
 		{TEXT("username"), Username}, 
@@ -54,19 +55,69 @@ void UPortalManager::SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr R
 		if (ContainsErrors(JsonObject))
 		{
 			SignUpStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+			return;
 		}
 
-		FDSSignUpResponse SignUpResponse;
-		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &SignUpResponse);
-		SignUpResponse.Dump();
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &LastSignUpResponse);
+		OnSignupSucceeded.Broadcast();
 	}
-		
-
-
 }
 
 void UPortalManager::Confirm(const FString& ConfirmationCode)
 {
+	ConfirmStatusMessageDelegate.Broadcast(TEXT("Checking verification code..."), false);
+	
+	check(APIData);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::ConfirmSignUp);
+	
+	// Use shared ref because not a UE managed object
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+
+	// Bind to response and send HTTP request
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::Confirm_Response);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("PUT"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	TMap<FString, FString> Params =
+	{
+		{TEXT("Username"), LastUsername}, 
+		{TEXT("ConfirmationCode"), ConfirmationCode},
+	};
+	const FString Content = SerializeJsonContent(Params);
+	
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
+}
+
+void UPortalManager::Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful)
+	{
+		ConfirmStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			if (JsonObject->HasField(TEXT("name")))
+			{
+				FString Exception = JsonObject->GetStringField(TEXT("name"));
+				if (Exception.Equals(TEXT("CodeMismatchException")))
+				{
+					ConfirmStatusMessageDelegate.Broadcast(TEXT("Incorrect verification code"), true);
+					return;
+				}
+			}
+			ConfirmStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+			return;
+		}
+	}
+	
+	OnConfirmSucceeded.Broadcast();
 }
 
 void UPortalManager::SignIn(const FString& Username, const FString& Password)
