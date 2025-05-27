@@ -17,9 +17,12 @@ class DEDICATEDSERVERS_API UPortalManager : public UHTTPRequestManager
 	GENERATED_BODY()
 
 public:
-	void SignIn(const FString& Username, const FString& Password);
+	UPROPERTY(BlueprintAssignable)
+	FAPIStatusMessage SignUpStatusMessageDelegate;
+
 	void SignUp(const FString& Username, const FString& Password, const FString& Email);
 	void Confirm(const FString& ConfirmationCode);
+	void SignIn(const FString& Username, const FString& Password);
  
 	UFUNCTION()
 	void QuitGame();

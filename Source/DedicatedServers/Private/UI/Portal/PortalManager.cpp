@@ -4,17 +4,18 @@
 #include "UI/Portal/PortalManager.h"
 
 #include "HttpModule.h"
+#include "JsonObjectConverter.h"
 #include "Data/API/APIData.h"
 #include "GameplayTags/DedicatedServersTags.h"
+#include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/GameSessions/GameSessionsManager.h"
-
-void UPortalManager::SignIn(const FString& Username, const FString& Password)
-{
-}
+#include "UI/HTTP/HTTPRequestTypes.h"
 
 void UPortalManager::SignUp(const FString& Username, const FString& Password, const FString& Email)
 {
+	SignUpStatusMessageDelegate.Broadcast(TEXT("Creating a new account..."), false);
+	
 	check(APIData);
 	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::SignUp);
 	
@@ -39,7 +40,36 @@ void UPortalManager::SignUp(const FString& Username, const FString& Password, co
 	Request->ProcessRequest();
 }
 
+void UPortalManager::SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful)
+	{
+		SignUpStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			SignUpStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+		}
+
+		FDSSignUpResponse SignUpResponse;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &SignUpResponse);
+		SignUpResponse.Dump();
+	}
+		
+
+
+}
+
 void UPortalManager::Confirm(const FString& ConfirmationCode)
+{
+}
+
+void UPortalManager::SignIn(const FString& Username, const FString& Password)
 {
 }
 
@@ -52,6 +82,4 @@ void UPortalManager::QuitGame()
 	}
 }
 
-void UPortalManager::SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{
-}
+
