@@ -29,7 +29,7 @@ void UConfirmSignUpPage::UpdateStatusMessage(const FString& Message, bool bShoul
 	{
 		Button_Confirm->SetIsEnabled(true);
 	}
-	
+
 }
 
 void UConfirmSignUpPage::UpdateConfirmButtonState(const FText& Text)

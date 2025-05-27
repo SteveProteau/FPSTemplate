@@ -22,6 +22,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FAPIStatusMessage ConfirmStatusMessageDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FAPIStatusMessage SignInStatusMessageDelegate;
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnAPIRequestSucceeded  OnSignupSucceeded;
@@ -42,4 +45,5 @@ public:
 private:
 	void SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };
